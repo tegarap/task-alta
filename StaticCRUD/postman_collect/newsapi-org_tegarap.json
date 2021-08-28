@@ -1,0 +1,277 @@
+{
+	"info": {
+		"_postman_id": "471d94ac-122a-49a9-b7a3-4700a00a8ca0",
+		"name": "newsapi-org",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "All articles mentioning Apple from yesterday, sorted by popular publishers first",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/everything?q=apple&from=2021-08-25&to=2021-08-25&sortBy=popularity&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"everything"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "apple"
+						},
+						{
+							"key": "from",
+							"value": "2021-08-25"
+						},
+						{
+							"key": "to",
+							"value": "2021-08-25"
+						},
+						{
+							"key": "sortBy",
+							"value": "popularity"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "All articles about Tesla from the last month, sorted by recent first",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/everything?q=tesla&from=2021-07-26&sortBy=publishedAt&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"everything"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "tesla"
+						},
+						{
+							"key": "from",
+							"value": "2021-07-26"
+						},
+						{
+							"key": "sortBy",
+							"value": "publishedAt"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Top business headlines in the US right now",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"top-headlines"
+					],
+					"query": [
+						{
+							"key": "country",
+							"value": "us"
+						},
+						{
+							"key": "category",
+							"value": "business"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Top headlines from TechCrunch right now",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"top-headlines"
+					],
+					"query": [
+						{
+							"key": "sources",
+							"value": "techcrunch"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "All articles published by the Wall Street Journal in the last 6 months, sorted by recent first",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/everything?domains=wsj.com&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"everything"
+					],
+					"query": [
+						{
+							"key": "domains",
+							"value": "wsj.com"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "News from detikcom",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/everything?domains=detik.com&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"everything"
+					],
+					"query": [
+						{
+							"key": "domains",
+							"value": "detik.com"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "News from liputan6com",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/everything?domains=liputan6.com&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"everything"
+					],
+					"query": [
+						{
+							"key": "domains",
+							"value": "liputan6.com"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Top business headlines in the Indonesia right now",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://newsapi.org/v2/top-headlines?country=id&category=business&apiKey=dd3f5b53af7d46379fa7bd57f3306571",
+					"protocol": "https",
+					"host": [
+						"newsapi",
+						"org"
+					],
+					"path": [
+						"v2",
+						"top-headlines"
+					],
+					"query": [
+						{
+							"key": "country",
+							"value": "id"
+						},
+						{
+							"key": "category",
+							"value": "business"
+						},
+						{
+							"key": "apiKey",
+							"value": "dd3f5b53af7d46379fa7bd57f3306571"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
