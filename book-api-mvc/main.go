@@ -3,10 +3,11 @@ package main
 import (
 	"book-api-mvc/config"
 	"book-api-mvc/routes"
+	"os"
 )
 
 func main() {
 	config.InitDB()
 	e := routes.New()
-	e.Logger.Fatal(e.Start(":8000"))
+	e.Logger.Fatal(e.Start(":"+os.Getenv("SERV_PORT")))
 }
