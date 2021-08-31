@@ -68,11 +68,6 @@ func UpdateUserController(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
 	}
 	usr := models.User{}
-	_, er := database.GetUser(id)
-	er = c.Bind(&usr)
-	if er != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, er.Error())
-	}
 	user, err := database.UpdateUser(id, &usr)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())

@@ -12,7 +12,7 @@ import (
 func GetBooksController(c echo.Context) error {
 	books, err := database.GetBooks()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	return c.JSON(http.StatusOK, common.Response("success get all book", books))
 }
@@ -20,11 +20,11 @@ func GetBooksController(c echo.Context) error {
 func GetBookController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	book, e := database.GetBook(id)
 	if e != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	return c.JSON(http.StatusOK, common.Response("success get book", book))
 }
@@ -40,7 +40,7 @@ func CreateBookController(c echo.Context) error {
 	}
 	book, e := database.CreateBook(&usrInput)
 	if e != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	return c.JSON(http.StatusOK, common.Response("success create book", book))
 }
@@ -48,15 +48,15 @@ func CreateBookController(c echo.Context) error {
 func DeleteBookController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	_, e := database.GetBook(id)
 	if e != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	} else {
 		_, err := database.DeleteBook(id)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 	}
 	return c.JSON(http.StatusOK, common.Response("success delete book", nil))
@@ -65,17 +65,12 @@ func DeleteBookController(c echo.Context) error {
 func UpdateBookController(c echo.Context) error {
 	id, e := strconv.Atoi(c.Param("id"))
 	if e != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	book := models.Book{}
-	_, er := database.GetBook(id)
-	er = c.Bind(&book)
-	if er != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, er.Error())
-	}
 	upBook, err := database.UpdateBook(id, &book)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+		return echo.NewHTTPError(http.StatusForbidden, common.NewBadRequestResponse())
 	}
 	return c.JSON(http.StatusOK, common.Response("success update book", upBook))
 }

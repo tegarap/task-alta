@@ -68,11 +68,6 @@ func UpdateBookController(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
 	}
 	book := models.Book{}
-	_, er := database.GetBook(id)
-	er = c.Bind(&book)
-	if er != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, er.Error())
-	}
 	upBook, err := database.UpdateBook(id, &book)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
