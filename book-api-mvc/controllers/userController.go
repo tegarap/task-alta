@@ -50,9 +50,14 @@ func DeleteUserController(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	_, e := database.DeleteUser(id)
+	_, e := database.GetUser(id)
 	if e != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+	} else {
+		_, err := database.DeleteUser(id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+		}
 	}
 	return c.JSON(http.StatusOK, util.Response("success delete user", nil))
 }
