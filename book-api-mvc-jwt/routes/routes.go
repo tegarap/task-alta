@@ -18,10 +18,10 @@ func New() *echo.Echo {
 	// ------------------------------------------------------------------
 	r.GET("/users", c.GetUsersController)
 	r.GET("/users/:id", c.GetUserController)
+	r.GET("/users/:id", c.GetUserDetailController)
 	e.POST("/users", c.CreateUserController)
 	r.DELETE("/users/:id", c.DeleteUserController)
 	r.PUT("/users/:id", c.UpdateUserController)
-	r.GET("/users/:id", c.GetUserDetailController)
 	// ------------------------------------------------------------------
 	// BOOK
 	// ------------------------------------------------------------------
