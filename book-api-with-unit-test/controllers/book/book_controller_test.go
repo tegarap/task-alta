@@ -5,7 +5,6 @@ import (
 	"book-api-mvc/models"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -36,11 +35,6 @@ func InsertDataBookForGetBooks() error {
 func TestGetAllBookController(t *testing.T) {
 	e := initEchoTestAPI()
 	InsertDataBookForGetBooks()
-	req := httptest.NewRequest(http.MethodGet, "/books", nil)
-	res := httptest.NewRecorder()
-	context := e.NewContext(req, res)
-
-	GetAllBookController(context)
 
 	type BookResponse struct {
 		Status string        `json:"status"`
@@ -53,18 +47,35 @@ func TestGetAllBookController(t *testing.T) {
 		Publisher: "Maliki Press",
 	}
 
-	var response BookResponse
-	resBody := res.Body.String()
 
-	json.Unmarshal([]byte(resBody), &response)
+	for i := 1; i <= 2; i++ {
+		if i == 2 {
+			//drop table
+			config.DB.Migrator().DropTable(&models.Book{})
+		}
+		req := httptest.NewRequest(http.MethodGet, "/books", nil)
+		res := httptest.NewRecorder()
+		context := e.NewContext(req, res)
 
-	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Equal(t, "success", response.Status)
-	fmt.Println("===================================================================")
-	fmt.Println(response)
-	assert.Equal(t, book.Title, response.Data[0].Title)
-	assert.Equal(t, book.Author, response.Data[0].Author)
-	assert.Equal(t, book.Publisher, response.Data[0].Publisher)
+		GetAllBookController(context)
+
+
+		var response BookResponse
+		resBody := res.Body.String()
+
+		json.Unmarshal([]byte(resBody), &response)
+
+		if i == 1 {
+			assert.Equal(t, http.StatusOK, res.Code)
+			assert.Equal(t, "success", response.Status)
+			assert.Equal(t, book.Title, response.Data[0].Title)
+			assert.Equal(t, book.Author, response.Data[0].Author)
+			assert.Equal(t, book.Publisher, response.Data[0].Publisher)
+		} else {
+			assert.Equal(t, http.StatusBadRequest, res.Code)
+			assert.Equal(t, "fail", response.Status)
+		}
+	}
 }
 
 func TestGetBookController(t *testing.T) {

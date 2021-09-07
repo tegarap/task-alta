@@ -5,7 +5,6 @@ import (
 	"book-api-mvc/models"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -36,11 +35,6 @@ func InsertDataUserForGetUsers() error {
 func TestGetAllUserController(t *testing.T) {
 	e := initEchoTestAPI()
 	InsertDataUserForGetUsers()
-	req := httptest.NewRequest(http.MethodGet, "/users", nil)
-	res := httptest.NewRecorder()
-	context := e.NewContext(req, res)
-
-	GetAllUserController(context)
 
 	type UserResponse struct {
 		Status string        `json:"status"`
@@ -53,18 +47,34 @@ func TestGetAllUserController(t *testing.T) {
 		Password: "123",
 	}
 
-	var response UserResponse
-	resBody := res.Body.String()
+	for i := 1; i <= 2; i++ {
+		if i == 2 {
+			//drop table
+			config.DB.Migrator().DropTable(&models.User{})
+		}
+		req := httptest.NewRequest(http.MethodGet, "/users", nil)
+		res := httptest.NewRecorder()
+		context := e.NewContext(req, res)
 
-	json.Unmarshal([]byte(resBody), &response)
+		GetAllUserController(context)
 
-	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Equal(t, "success", response.Status)
-	fmt.Println("===================================================================")
-	fmt.Println(response)
-	assert.Equal(t, user.Name, response.Data[0].Name)
-	assert.Equal(t, user.Email, response.Data[0].Email)
-	assert.Equal(t, user.Password, response.Data[0].Password)
+
+		var response UserResponse
+		resBody := res.Body.String()
+
+		json.Unmarshal([]byte(resBody), &response)
+
+		if i == 1 {
+			assert.Equal(t, http.StatusOK, res.Code)
+			assert.Equal(t, "success", response.Status)
+			assert.Equal(t, user.Name, response.Data[0].Name)
+			assert.Equal(t, user.Email, response.Data[0].Email)
+			assert.Equal(t, user.Password, response.Data[0].Password)
+		} else {
+			assert.Equal(t, http.StatusBadRequest, res.Code)
+			assert.Equal(t, "fail", response.Status)
+		}
+	}
 }
 
 func TestGetUserController(t *testing.T) {
