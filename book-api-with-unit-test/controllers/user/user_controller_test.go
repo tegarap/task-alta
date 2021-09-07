@@ -12,6 +12,11 @@ import (
 	"testing"
 )
 
+type userResponse struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+}
+
 func initEchoTestAPI() *echo.Echo {
 	config.InitDBTest("user")
 	e := echo.New()
@@ -33,247 +38,268 @@ func InsertDataUserForGetUsers() error {
 }
 
 func TestGetAllUserController(t *testing.T) {
+	var testCases = []struct {
+		expectCode   int
+		responStatus string
+	}{
+		{
+			expectCode:   http.StatusOK,
+			responStatus: "success",
+		},
+		{
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+	}
+
 	e := initEchoTestAPI()
 	InsertDataUserForGetUsers()
 
-	type UserResponse struct {
-		Status string        `json:"status"`
-		Data   []models.User `json:"data"`
-	}
-
-	user := models.User{
-		Name:     "Alta",
-		Email:    "alta@gmail.com",
-		Password: "123",
-	}
-
-	for i := 1; i <= 2; i++ {
-		if i == 2 {
-			//drop table
-			config.DB.Migrator().DropTable(&models.User{})
-		}
+	for i, testCase := range testCases {
 		req := httptest.NewRequest(http.MethodGet, "/users", nil)
 		res := httptest.NewRecorder()
 		context := e.NewContext(req, res)
-
-		GetAllUserController(context)
-
-
-		var response UserResponse
-		resBody := res.Body.String()
-
-		json.Unmarshal([]byte(resBody), &response)
-
 		if i == 1 {
-			assert.Equal(t, http.StatusOK, res.Code)
-			assert.Equal(t, "success", response.Status)
-			assert.Equal(t, user.Name, response.Data[0].Name)
-			assert.Equal(t, user.Email, response.Data[0].Email)
-			assert.Equal(t, user.Password, response.Data[0].Password)
-		} else {
-			assert.Equal(t, http.StatusBadRequest, res.Code)
-			assert.Equal(t, "fail", response.Status)
+			//drop table
+			config.DB.Migrator().DropTable(&models.User{})
+		}
+		if assert.NoError(t, GetAllUserController(context)) {
+			assert.Equal(t, testCase.expectCode, res.Code)
+			resBody := res.Body.String()
+
+			var response userResponse
+			json.Unmarshal([]byte(resBody), &response)
+			assert.Equal(t, testCase.responStatus, response.Status)
 		}
 	}
 }
 
 func TestGetUserController(t *testing.T) {
+	var testCases = []struct {
+		idParam      string
+		expectCode   int
+		responStatus string
+	}{
+		{
+			idParam:      "1",
+			expectCode:   http.StatusOK,
+			responStatus: "success",
+		},
+		{
+			idParam:      "1a",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+		{
+			idParam:      "99",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+	}
+
 	e := initEchoTestAPI()
 	InsertDataUserForGetUsers()
-	idParam := []string{"1", "1a", "99"}
 
-	type UserResponse struct {
-		Status string      `json:"status"`
-		Data   models.User `json:"data"`
-	}
-
-	user := models.User{
-		Name:     "Alta",
-		Email:    "alta@gmail.com",
-		Password: "123",
-	}
-
-	for _, value := range idParam {
+	for _, testCase := range testCases {
 		req := httptest.NewRequest(http.MethodGet, "/users/:id", nil)
 		res := httptest.NewRecorder()
 		context := e.NewContext(req, res)
 		context.SetParamNames("id")
-		context.SetParamValues(value)
-		GetUserController(context)
+		context.SetParamValues(testCase.idParam)
+		if testCase.idParam == "99" {
+			//drop table
+			config.DB.Migrator().DropTable(&models.User{})
+		}
+		if assert.NoError(t, GetUserController(context)) {
+			assert.Equal(t, testCase.expectCode, res.Code)
+			resBody := res.Body.String()
 
-		var response UserResponse
-		resBody := res.Body.String()
-
-		json.Unmarshal([]byte(resBody), &response)
-
-		if value == "1" {
-			assert.Equal(t, http.StatusOK, res.Code)
-			assert.Equal(t, "success", response.Status)
-			assert.Equal(t, user.Name, response.Data.Name)
-			assert.Equal(t, user.Email, response.Data.Email)
-			assert.Equal(t, user.Password, response.Data.Password)
-		} else {
-			assert.Equal(t, http.StatusBadRequest, res.Code)
-			assert.Equal(t, "fail", response.Status)
+			var response userResponse
+			json.Unmarshal([]byte(resBody), &response)
+			assert.Equal(t, testCase.responStatus, response.Status)
 		}
 	}
 }
 
-func TestCreateUserController(t *testing.T) {
-	e := initEchoTestAPI()
 
-	type UserResponse struct {
-		Status string      `json:"status"`
-		Data   models.User `json:"data"`
+func TestCreateUserController(t *testing.T) {
+	var testCases = []struct {
+		reqBody      map[string]string
+		expectCode   int
+		responStatus string
+	}{
+		{
+			reqBody:      map[string]string{"name": "Test Nama", "email": "iniemail@test.com", "password": "luwakwhitecoffe"},
+			expectCode:   http.StatusOK,
+			responStatus: "success",
+		},
+		{
+			reqBody:      map[string]string{"name": ""},
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
 	}
 
-	var response UserResponse
-
-	for i := 1; i <= 2; i++ {
-		reqBody := make(map[string]interface{})
-		if i == 1 {
-			reqBody["name"] = "Test Nama"
-			reqBody["email"] = "iniemail@test.com"
-			reqBody["password"] = "luwakwhitecoffe"
-		} else {
-			reqBody["name"] = ""
-		}
-
-		requestBody, _ := json.Marshal(reqBody)
+	e := initEchoTestAPI()
+	for _, testCase := range testCases {
+		requestBody, _ := json.Marshal(testCase.reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(requestBody))
-		res := httptest.NewRecorder()
 		req.Header.Set("Content-Type", "application/json")
+		res := httptest.NewRecorder()
 		context := e.NewContext(req, res)
+		if assert.NoError(t, CreateUserController(context)) {
+			resBody := res.Body.String()
+			assert.Equal(t, testCase.expectCode, res.Code)
 
-		CreateUserController(context)
-
-		resBody := res.Body.String()
-
-		json.Unmarshal([]byte(resBody), &response)
-
-		if i == 1 {
-			assert.Equal(t, http.StatusOK, res.Code)
-			assert.Equal(t, "success", response.Status)
-			assert.Equal(t, "Test Nama", response.Data.Name)
-			assert.Equal(t, "iniemail@test.com", response.Data.Email)
-			assert.Equal(t, "luwakwhitecoffe", response.Data.Password)
-		} else {
-			assert.Equal(t, http.StatusBadRequest, res.Code)
-			assert.Equal(t, "fail", response.Status)
+			var response userResponse
+			json.Unmarshal([]byte(resBody), &response)
+			assert.Equal(t, testCase.responStatus, response.Status)
 		}
 	}
 }
 
 func TestDeleteUserController(t *testing.T) {
-	e := initEchoTestAPI()
-	InsertDataUserForGetUsers()
-	idParam := []string{"1", "1a", "99"}
-
-	type UserResponse struct {
-		Status string      `json:"status"`
-		Data   models.User `json:"data"`
+	var testCases = []struct {
+		idParam      string
+		expectCode   int
+		responStatus string
+	}{
+		{
+			idParam:      "1",
+			expectCode:   http.StatusOK,
+			responStatus: "success",
+		},
+		{
+			idParam:      "1a",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+		{
+			idParam:      "99",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+		{
+			idParam:      "drop",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
 	}
 
-	for _, value := range idParam {
+	e := initEchoTestAPI()
+	InsertDataUserForGetUsers()
+
+	for _, testCase := range testCases {
 		req := httptest.NewRequest(http.MethodDelete, "/users/:id", nil)
 		res := httptest.NewRecorder()
 		context := e.NewContext(req, res)
 		context.SetParamNames("id")
-		context.SetParamValues(value)
-		DeleteUserController(context)
+		context.SetParamValues(testCase.idParam)
+		if testCase.idParam == "drop" {
+			//drop table
+			config.DB.Migrator().DropTable(&models.User{})
+		}
+		if assert.NoError(t, DeleteUserController(context)) {
+			assert.Equal(t, testCase.expectCode, res.Code)
+			resBody := res.Body.String()
 
-		var response UserResponse
-		resBody := res.Body.String()
-
-		json.Unmarshal([]byte(resBody), &response)
-
-		if value == "1" {
-			assert.Equal(t, http.StatusOK, res.Code)
-			assert.Equal(t, "success", response.Status)
-		} else {
-			assert.Equal(t, http.StatusBadRequest, res.Code)
-			assert.Equal(t, "fail", response.Status)
+			var response userResponse
+			json.Unmarshal([]byte(resBody), &response)
+			assert.Equal(t, testCase.responStatus, response.Status)
 		}
 	}
 }
 
 func TestUpdateUserController(t *testing.T) {
+	var testCases = []struct {
+		idParam      string
+		expectCode   int
+		responStatus string
+	}{
+		{
+			idParam:      "1",
+			expectCode:   http.StatusOK,
+			responStatus: "success",
+		},
+		{
+			idParam:      "1a",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+		{
+			idParam:      "99",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+		{
+			idParam:      "drop",
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
+	}
+
 	e := initEchoTestAPI()
 	InsertDataUserForGetUsers()
-	idParam := []string{"1", "1a", "99"}
 
 	requestBody, _ := json.Marshal(map[string]string{
 		"name":  "Tes Nama",
 		"email": "iniemail@test.com",
-		//"password": "luwakwhitecoffe",
 	})
-
-	type UserResponse struct {
-		Status string      `json:"status"`
-		Data   models.User `json:"data"`
-	}
-
-	for _, value := range idParam {
+	for _, testCase := range testCases {
 		req := httptest.NewRequest(http.MethodPut, "/users/:id", bytes.NewBuffer(requestBody))
-		res := httptest.NewRecorder()
 		req.Header.Set("Content-Type", "application/json")
+		res := httptest.NewRecorder()
 		context := e.NewContext(req, res)
 		context.SetParamNames("id")
-		context.SetParamValues(value)
-		UpdateUserController(context)
+		context.SetParamValues(testCase.idParam)
+		if testCase.idParam == "drop" {
+			//drop table
+			config.DB.Migrator().DropTable(&models.User{})
+		}
+		if assert.NoError(t, UpdateUserController(context)) {
+			assert.Equal(t, testCase.expectCode, res.Code)
+			resBody := res.Body.String()
 
-		var response UserResponse
-		resBody := res.Body.String()
-
-		json.Unmarshal([]byte(resBody), &response)
-
-		if value == "1" {
-			assert.Equal(t, http.StatusOK, res.Code)
-			assert.Equal(t, "success", response.Status)
-		} else {
-			assert.Equal(t, http.StatusBadRequest, res.Code)
-			assert.Equal(t, "fail", response.Status)
+			var response userResponse
+			json.Unmarshal([]byte(resBody), &response)
+			assert.Equal(t, testCase.responStatus, response.Status)
 		}
 	}
 }
 
 func TestLoginUsersController(t *testing.T) {
-	e := initEchoTestAPI()
-	InsertDataUserForGetUsers()
-
-	type UserResponse struct {
-		Status string      `json:"status"`
-		Data   models.User `json:"data"`
+	var testCases = []struct {
+		reqBody      map[string]string
+		expectCode   int
+		responStatus string
+	}{
+		{
+			reqBody:      map[string]string{"email": "alta@gmail.com", "password": "123"},
+			expectCode:   http.StatusOK,
+			responStatus: "success",
+		},
+		{
+			reqBody:      map[string]string{"email": "kliru@gmail.com", "password": "123123123"},
+			expectCode:   http.StatusBadRequest,
+			responStatus: "fail",
+		},
 	}
 
-	for i := 1; i <= 2; i++ {
-		reqBody := make(map[string]string)
-		if i == 1 {
-			reqBody["email"] = "alta@gmail.com"
-			reqBody["password"] = "123"
-		} else {
-			reqBody["email"] = "kliru@gmail.com"
-			reqBody["password"] = "1234123"
-		}
-
-		requestBody, _ := json.Marshal(reqBody)
+	e := initEchoTestAPI()
+	InsertDataUserForGetUsers()
+	for _, testCase := range testCases {
+		requestBody, _ := json.Marshal(testCase.reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(requestBody))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		res := httptest.NewRecorder()
 		context := e.NewContext(req, res)
-		LoginUsersController(context)
+		if assert.NoError(t, LoginUsersController(context)) {
+			resBody := res.Body.String()
+			assert.Equal(t, testCase.expectCode, res.Code)
 
-		var response UserResponse
-		resBody := res.Body.String()
-
-		json.Unmarshal([]byte(resBody), &response)
-
-		if i == 1 {
-			assert.Equal(t, http.StatusOK, res.Code)
-			assert.Equal(t, "success", response.Status)
-		} else {
-			assert.Equal(t, http.StatusBadRequest, res.Code)
-			assert.Equal(t, "fail", response.Status)
+			var response userResponse
+			json.Unmarshal([]byte(resBody), &response)
+			assert.Equal(t, testCase.responStatus, response.Status)
 		}
 	}
 }

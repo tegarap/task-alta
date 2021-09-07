@@ -12,7 +12,8 @@ import (
 func GetAllBookController(c echo.Context) error {
 	books, err := database.GetAllBook()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("failed while fetching data"))
+		//return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("failed while fetching data"))
+		return c.JSON(http.StatusBadRequest, common.ResponseFail("failed while fetching data"))
 	}
 	return c.JSON(http.StatusOK, common.ResponseSuccess(books))
 }
@@ -33,10 +34,8 @@ func GetBookController(c echo.Context) error {
 
 func CreateBookController(c echo.Context) error {
 	usrInput := models.Book{}
-	err := c.Bind(&usrInput)
-	if err != nil {
-		return err
-	}
+	c.Bind(&usrInput)
+
 	if usrInput.Title == "" || usrInput.Author == "" || usrInput.Publisher == "" {
 		return c.JSON(http.StatusBadRequest, common.ResponseFail("field are required"))
 	}
@@ -58,9 +57,10 @@ func DeleteBookController(c echo.Context) error {
 		//return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("id not found"))
 		return c.JSON(http.StatusBadRequest, common.ResponseFail("id not found"))
 	} else {
-		_, err := database.DeleteBook(id)
+		_, err = database.DeleteBook(id)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("cannot delete book"))
+			//return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("cannot delete book"))
+			return c.JSON(http.StatusBadRequest, common.ResponseFail("cannot delete book"))
 		}
 	}
 	return c.JSON(http.StatusOK, common.ResponseSuccess("success delete book with id: "+c.Param("id")))

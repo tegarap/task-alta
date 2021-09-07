@@ -11,10 +11,7 @@ import (
 
 func LoginUsersController(c echo.Context) error {
 	var user models.User
-	err := c.Bind(&user)
-	if err != nil {
-		return err
-	}
+	c.Bind(&user)
 
 	users, err := database.LoginUser(&user)
 	if err != nil {
@@ -53,16 +50,13 @@ func GetUserController(c echo.Context) error {
 
 func CreateUserController(c echo.Context) error {
 	usrInput := models.User{}
-	err := c.Bind(&usrInput)
-	if err != nil {
-		return err
-	}
+	c.Bind(&usrInput)
 
 	if usrInput.Name == "" || usrInput.Password == "" || usrInput.Email == "" {
 		return c.JSON(http.StatusBadRequest, common.ResponseFail("field are required"))
 	}
 
-	user, _ := database.CreateUser(&usrInput)
+	user, err := database.CreateUser(&usrInput)
 	if err != nil {
 		//return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("failed to create user"))
 		return c.JSON(http.StatusBadRequest, common.ResponseFail("failed to create user"))
@@ -85,10 +79,10 @@ func DeleteUserController(c echo.Context) error {
 	} else {
 		_, err = database.DeleteUser(id)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("cannot delete user"))
+			//return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("cannot delete user"))
+			return c.JSON(http.StatusBadRequest, common.ResponseFail("cannot delete user"))
 		}
 	}
-
 	return c.JSON(http.StatusOK, common.ResponseSuccess("success delete user with id: "+c.Param("id")))
 }
 
@@ -108,7 +102,7 @@ func UpdateUserController(c echo.Context) error {
 	var newUser models.User
 	c.Bind(&newUser)
 
-	upUser, _ := database.UpdateUser(user, &newUser)
+	upUser, err := database.UpdateUser(user, &newUser)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, common.ResponseFail("cannot delete user"))
 	}
